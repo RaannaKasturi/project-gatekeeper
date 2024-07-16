@@ -1,0 +1,5 @@
+.env
+/raannakasturi/*
+/admin/*
+/GradioApps/*
+/__pycache__/*
