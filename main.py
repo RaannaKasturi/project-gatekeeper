@@ -105,7 +105,7 @@ if __name__ == "__main__":
         print("TXT records deleted successfully")
     except:
         print("error deleting TXT records")
-    os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
-    os.remove(f"{email.split('@')[0]}/domain.csr")
-    os.remove(f"{email.split('@')[0]}/public.pem")
+    #os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
+    #os.remove(f"{email.split('@')[0]}/domain.csr")
+    #os.remove(f"{email.split('@')[0]}/public.pem")
     print(f"Private Key: {privFile}\nSSL Certificate: {certFile}\nCA Certificate: {caFile}")
