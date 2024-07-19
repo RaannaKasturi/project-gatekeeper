@@ -142,20 +142,12 @@ def finalize_order(ca_url, auth, order, order_headers, csr, account_key):
     return cert_resp
 
 def save_cert(data, email):
-    certs = data.split('-----BEGIN CERTIFICATE-----\n')[1:]
-    caFile = f"{email.split('@')[0]}/CACertificate.pem"
     certFile  = f"{email.split('@')[0]}/Certificate.pem"
-    for i, cert in enumerate(certs, 1):
-        # Preparing certificate content with BEGIN/END headers
-        if i == 1:
-            file_name = certFile
-        elif i == 2:
-            file_name = caFile
-        cert_content = f"-----BEGIN CERTIFICATE-----\n{cert.strip()}"
-        with open(file_name, 'w') as f:
-            f.write(cert_content)
-            f.write('\n')
-    return certFile, caFile
+    file_name = certFile
+    with open(file_name, 'w') as f:
+        f.write(data)
+        f.write('\n')
+    return certFile
 
 def getTXT(tempPrivateFile, CSRFile, server, email):
     domains, common_name = get_csr_domains(CSRFile)
@@ -188,7 +180,7 @@ def getCert(tempPrivateFile, CSRFile, challenges_info, auth, order, order_header
             continue
     cert = finalize_order(server, auth, order, order_headers, CSRFile, tempPrivateFile)
     if cert:
-        certFile, caFile = save_cert(cert, email)
-    return certFile, caFile
+        certFile = save_cert(cert, email)
+    return certFile
 
 #python3 test.py --account-key raannakasturi/tempPrivate.pem --csr raannakasturi/domain.csr --email raannakasturi@gmail.com --dns

@@ -73,14 +73,17 @@ def checkCert(file_path):
 if __name__ == "__main__":
     iDomains = "thenayankasturi.eu.org, www.thenayankasturi.eu.org, dash.thenayankasturi.eu.org"
     cfDomain = "silerudaagartha.eu.org"
-    email = "admin@gmail.com"
+    email = "raannakasturi@gmail.com"
     keyType = "rsa2048" # ec256 or ec384 or rsa2048 or rsa4096
-    server = chooseCAserver("letsencrypt_test")
+    server = chooseCAserver("letsencrypt")
     domains = getDomains(iDomains)
     exchange = extractSubDomains(domains)
     CNAMERecs, CNAMEValues = genCNAME(domains, cfDomain, exchange)
     for CNAMERec, CNAMEValue in zip(CNAMERecs, CNAMEValues):
         print(f"{CNAMERec} ==> {CNAMEValue}")
+    cont = input("Continue? (y/n): ")
+    if cont.lower() != "y":
+        exit()
     privFile, csrFile, tempPrivFile = genPrivCSR(email, domains, keyType)
     challenges_info, auth, order, order_headers, acmeTXTRecs, acmeTXTValues = getTXT(tempPrivFile, csrFile, server, email)
     for txtRecords, acmeTXTValues, _ in challenges_info:
@@ -92,7 +95,7 @@ if __name__ == "__main__":
         print(f"Waiting for DNS records to propagate... {45-i}", end="\r")
         time.sleep(1)
     while True:
-        certFile, caFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order, order_headers, server, email)
+        certFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order, order_headers, server, email)
         if checkCert(certFile) == True:
             break
         else:
@@ -105,7 +108,7 @@ if __name__ == "__main__":
         print("TXT records deleted successfully")
     except:
         print("error deleting TXT records")
-    #os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
-    #os.remove(f"{email.split('@')[0]}/domain.csr")
-    #os.remove(f"{email.split('@')[0]}/public.pem")
-    print(f"Private Key: {privFile}\nSSL Certificate: {certFile}\nCA Certificate: {caFile}")
+    os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
+    os.remove(f"{email.split('@')[0]}/domain.csr")
+    os.remove(f"{email.split('@')[0]}/public.pem")
+    print(f"Private Key: {privFile}\nFull SSL Certificate: {certFile}")
