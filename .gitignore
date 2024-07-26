@@ -1,5 +1,6 @@
 .env
-/raannakasturi/*
-/admin/*
-/GradioApps/*
-/__pycache__/*
+/raannakasturi
+/admin
+/GradioApps
+/__pycache__
+/testing

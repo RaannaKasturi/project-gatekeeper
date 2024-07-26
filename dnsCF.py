@@ -3,19 +3,19 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-CF_TOKEN = os.getenv("CF_TOKEN")
-CF_ZONE_ID = os.getenv("CF_ZONE_ID")
-CF_EMAIL_ID = os.getenv("CF_EMAIL_ID")
+cftoken = os.environ.get("CF_TOKEN")
+cfzoneid = os.environ.get("CF_ZONE_ID")
+cfemail = os.environ.get("CF_EMAIL_ID")
 CF_API = "https://api.cloudflare.com/client/v4/"
 
 headers = {
     "Content-Type": "application/json",
-    "X-Auth-Email": CF_EMAIL_ID,
-    "X-Auth-Key": CF_TOKEN
+    "X-Auth-Email": cfemail,
+    "X-Auth-Key": cftoken
 }
 
 def checkTXT(TXTRecs):
-    cf_endpoint = f"zones/{CF_ZONE_ID}/dns_records"
+    cf_endpoint = f"zones/{cfzoneid}/dns_records"
     url = f"{CF_API}{cf_endpoint}"
     response = requests.request("GET", url, headers=headers)
     data = response.json()
@@ -32,7 +32,7 @@ def checkTXT(TXTRecs):
     return recordIDs, recordNames
         
 def addTXT(TXTRec, TXTValue, SSLEmail):
-    cf_endpoint = f"zones/{CF_ZONE_ID}/dns_records"
+    cf_endpoint = f"zones/{cfzoneid}/dns_records"
     url = f"{CF_API}{cf_endpoint}"
     name = TXTRec
     data = {
@@ -51,7 +51,7 @@ def delTXT(TXTName):
     for recordID, recordName in zip(recordIDs, recordNames):
         if recordName.startswith(TXTName):
             try:
-                cf_endpoint = f"zones/{CF_ZONE_ID}/dns_records/{recordID}"
+                cf_endpoint = f"zones/{cfzoneid}/dns_records/{recordID}"
                 url = f"{CF_API}{cf_endpoint}"
                 requests.request("DELETE", url, headers=headers)
                 res = f"records deleted"

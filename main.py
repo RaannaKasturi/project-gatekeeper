@@ -72,27 +72,30 @@ def checkCert(file_path):
 
 if __name__ == "__main__":
     iDomains = "thenayankasturi.eu.org, www.thenayankasturi.eu.org, dash.thenayankasturi.eu.org"
-    cfDomain = "silerudaagartha.eu.org"
     email = "raannakasturi@gmail.com"
     keyType = "rsa2048" # ec256 or ec384 or rsa2048 or rsa4096
-    server = chooseCAserver("letsencrypt")
+    cfDomain = "silerudaagartha.eu.org"
+    server = chooseCAserver("letsencrypt_test")
     domains = getDomains(iDomains)
     exchange = extractSubDomains(domains)
     CNAMERecs, CNAMEValues = genCNAME(domains, cfDomain, exchange)
     for CNAMERec, CNAMEValue in zip(CNAMERecs, CNAMEValues):
         print(f"{CNAMERec} ==> {CNAMEValue}")
-    cont = input("Continue? (y/n): ")
-    if cont.lower() != "y":
-        exit()
     privFile, csrFile, tempPrivFile = genPrivCSR(email, domains, keyType)
     challenges_info, auth, order, order_headers, acmeTXTRecs, acmeTXTValues = getTXT(tempPrivFile, csrFile, server, email)
+    try:
+        for txtRecords, acmeTXTValues, _ in challenges_info:
+            TXTRRec = TXTRec(txtRecords, exchange)
+            delTXT(TXTRRec)
+        print("TXT records deleted successfully")
+    except:
+        print("error deleting TXT records or no records to delete")
     for txtRecords, acmeTXTValues, _ in challenges_info:
         TXTRRec = TXTRec(txtRecords, exchange)
-        delTXT(TXTRRec)
         print(f"Adding TXT records {TXTRRec} with value {acmeTXTValues} to CF DNS...")
         addTXT(TXTRRec, acmeTXTValues, email)
-    for i in range(45):
-        print(f"Waiting for DNS records to propagate... {45-i}", end="\r")
+    for i in range(60):
+        print(f"Waiting for DNS records to propagate... {60-i}", end="\r")
         time.sleep(1)
     while True:
         certFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order, order_headers, server, email)
@@ -111,4 +114,5 @@ if __name__ == "__main__":
     os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
     os.remove(f"{email.split('@')[0]}/domain.csr")
     os.remove(f"{email.split('@')[0]}/public.pem")
-    print(f"Private Key: {privFile}\nFull SSL Certificate: {certFile}")
+    print("Private Key: ", privFile)
+    print("Certificate: ", certFile)
