@@ -1,6 +1,6 @@
 import hashlib
 
-def getDomains(iDomains):
+def get_domains(iDomains):
     domains = []
     for domain in iDomains.split(","):
         domain = domain.strip()
@@ -12,14 +12,14 @@ def prefix(domain):
     prefix = hashlib.blake2b(domain_bytes, digest_size=12).hexdigest()
     return prefix
 
-def genCNAMERecs(domains):
+def gen_cname_recs(domains):
     CNAMERecs = []
     for domain in domains:
         CNAMERec = f"_acme-challenge.{domain}"
         CNAMERecs.append(CNAMERec)
     return CNAMERecs
 
-def genCNAMEValues(domains, cfDomain, exchange):
+def gen_cname_values(domains, cfDomain, exchange):
     tempCNAMEValues = []
     CNAMEValues = []
     for domain in domains:
@@ -31,13 +31,13 @@ def genCNAMEValues(domains, cfDomain, exchange):
         CNAMEValues.append(modified_CNAMEValue)
     return CNAMEValues
 
-def genCNAME(domains, cfDomain, exchange):
+def gen_cname(domains, cfDomain, exchange):
     records = []
-    CNAMERecs  = genCNAMERecs(domains)
-    CNAMEValues = genCNAMEValues(domains, cfDomain, exchange)
+    CNAMERecs  = gen_cname_recs(domains)
+    CNAMEValues = gen_cname_values(domains, cfDomain, exchange)
     return CNAMERecs, CNAMEValues
 
-def TXTRec(txtRecords, exchange):
+def txt_recs(txtRecords, exchange):
     txtRecord = txtRecords.replace("_acme-challenge.", "")
     txtRec = txtRecord.replace(f"{exchange}", "")
     pre = prefix(txtRecord)

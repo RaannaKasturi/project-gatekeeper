@@ -8,12 +8,12 @@ from urllib.error import URLError
 from urllib.request import urlopen
 from cryptoTools import sign
 
-def getDirectory(ca_url):
+def get_directory(ca_url):
     global CA_DIR
     CA_DIR = json.loads(urlopen(ca_url).read().decode("utf8"))
     return CA_DIR
 
-def writeFile(data, email):
+def write_file(data, email):
     certFile  = f"{email.split('@')[0]}/Certificate.pem"
     file_name = certFile
     with open(file_name, 'w') as f:
@@ -27,7 +27,7 @@ def b64(b):
         b = b.encode()
     return base64.urlsafe_b64encode(b).decode().replace("=", "")
 
-def do_request(url, data=None, err_msg="Error"):
+def do_request(url, data=None):
     try:
         resp = urllib.request.urlopen(
             urllib.request.Request(
@@ -48,14 +48,14 @@ def do_request(url, data=None, err_msg="Error"):
         resp_data = e.read().decode("utf8") if hasattr(e, "read") else str(e)
         code, headers = getattr(e, "code", None), {}
     try:
-        resp_data = json.loads(resp_data)  # try to parse json results
+        resp_data = json.loads(resp_data)
     except ValueError:
-        pass  # resp_data is not a JSON string; that's fine
+        pass
     return resp_data, code, headers
 
 def mk_signed_req_body(url, payload, nonce, auth, account_key):
     if len(nonce) < 1:
-        sys.stderr.write("_mk_signed_req_body: nonce invalid: {}".format(nonce))
+        print("_mk_signed_req_body: nonce invalid: {}".format(nonce))
         sys.exit(1)
     payload64 = "" if payload is None else b64(json.dumps(payload).encode("utf8"))
     protected = {"url": url, "alg": "RS256", "nonce": nonce}
@@ -85,9 +85,8 @@ def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):
         ):
             nonce = headers.get("Replay-Nonce", "")
             tried += 1
-            continue
         else:
-            sys.stderr.write(
+            print(
                 "{0}:\nUrl: {1}\nData: {2}\nResponse Code: {3}\nResponse: {4}".format(
                     err_msg, url, data, resp_code, resp_data
                 )
@@ -95,12 +94,12 @@ def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):
             sys.exit(1)
 
 def poll_until_not(url, pending_statuses, nonce_url, auth, account_key, err_msg):
-    result, t0, delay = None, time.time(), 5  # Increase initial delay to 5 seconds
+    result, t0, delay = None, time.time(), 5
     while result is None or result["status"] in pending_statuses:
-        assert time.time() - t0 < 3600, "Polling timeout"  # 1 hour timeout
+        assert time.time() - t0 < 3600, "Polling timeout"
         print(f"Checking order status: {result['status'] if result else 'None'}")
         time.sleep(delay)
-        delay = min(delay * 2, 120)  # Increase the delay, up to a maximum of 120 seconds
+        delay = min(delay * 2, 120)
         result, _, _ = send_signed_request(
             url, None, nonce_url, auth, account_key, err_msg
         )

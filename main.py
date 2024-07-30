@@ -3,18 +3,18 @@
 import os
 import time
 from dnsCF import addTXT, delTXT
-from genRecords import genCNAME, TXTRec
-from genPrivCSR import genPrivCSR
+from genRecords import gen_cname, txt_recs
+from genPrivCSR import gen_verify_pvt_csr
 from LE_SignCSR import getTXT, getCert
 
-def getDomains(iDomains):
+def get_domains(iDomains):
     domains = []
     for domain in iDomains.split(","):
         domain = domain.strip()
         domains.append(domain)
     return domains
 
-def chooseCAserver(provider):
+def choose_ca_server(provider):
     if provider == "letsencrypt":
         return "https://acme-v02.api.letsencrypt.org/directory"
     elif provider == "letsencrypt_test":
@@ -37,11 +37,11 @@ def chooseCAserver(provider):
         print("Invalid provider.")
         return None
     
-def extractSubDomains(domains):
+def extract_subdomains(domains):
     exchange = min(domains, key=len)
     return exchange
 
-def checkCert(file_path):
+def checkc_cert(file_path):
     try:
         with open(file_path, 'r') as file:
             content = file.read()
@@ -49,7 +49,11 @@ def checkCert(file_path):
                 return True
             else:
                 return False
-    except:
+    except (FileNotFoundError, IsADirectoryError) as e:
+        print(f"Error opening file: {e}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
         return False
 
 if __name__ == "__main__":
@@ -57,23 +61,23 @@ if __name__ == "__main__":
     email = "raannakasturi@gmail.com"
     keyType = "rsa2048" # ec256 or ec384 or rsa2048 or rsa4096
     cfDomain = "silerudaagartha.eu.org"
-    server = chooseCAserver("letsencrypt_test")
-    domains = getDomains(iDomains)
-    exchange = extractSubDomains(domains)
-    CNAMERecs, CNAMEValues = genCNAME(domains, cfDomain, exchange)
+    server = choose_ca_server("letsencrypt_test")
+    domains = get_domains(iDomains)
+    exchange = extract_subdomains(domains)
+    CNAMERecs, CNAMEValues = gen_cname(domains, cfDomain, exchange)
     for CNAMERec, CNAMEValue in zip(CNAMERecs, CNAMEValues):
         print(f"{CNAMERec} ==> {CNAMEValue}")
-    privFile, csrFile, tempPrivFile = genPrivCSR(email, domains, keyType)
+    privFile, csrFile, tempPrivFile = gen_verify_pvt_csr(email, domains, keyType)
     challenges_info, auth, order, order_headers, acmeTXTRecs, acmeTXTValues = getTXT(tempPrivFile, csrFile, server, email)
     try:
         for txtRecords, acmeTXTValues, _ in challenges_info:
-            TXTRRec = TXTRec(txtRecords, exchange)
+            TXTRRec = txt_recs(txtRecords, exchange)
             delTXT(TXTRRec)
         print("TXT records deleted successfully")
-    except:
-        print("error deleting TXT records or no records to delete")
+    except Exception as e:
+        print(f"Error deleting TXT records or no TXT records exists: {e}")
     for txtRecords, acmeTXTValues, _ in challenges_info:
-        TXTRRec = TXTRec(txtRecords, exchange)
+        TXTRRec = txt_recs(txtRecords, exchange)
         print(f"Adding TXT records {TXTRRec} with value {acmeTXTValues} to CF DNS...")
         addTXT(TXTRRec, acmeTXTValues, email)
     for i in range(60):
@@ -81,18 +85,17 @@ if __name__ == "__main__":
         time.sleep(1)
     while True:
         certFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order, order_headers, server, email)
-        if checkCert(certFile) == True:
+        if checkc_cert(certFile) == True:
             break
         else:
             time.sleep(20)
-            continue
     try:
         for txtRecords, acmeTXTValues, _ in challenges_info:
-            TXTRRec = TXTRec(txtRecords, exchange)
+            TXTRRec = txt_recs(txtRecords, exchange)
             delTXT(TXTRRec)
         print("TXT records deleted successfully")
-    except:
-        print("error deleting TXT records")
+    except Exception as e:
+        print(f"Error deleting TXT records: {e}")
     os.remove(f"{email.split('@')[0]}/tempPrivate.pem")
     os.remove(f"{email.split('@')[0]}/domain.csr")
     os.remove(f"{email.split('@')[0]}/public.pem")

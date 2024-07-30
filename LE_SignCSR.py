@@ -2,10 +2,10 @@ import json
 import hashlib
 from urllib.request import urlopen
 from tools import b64, send_signed_request, poll_until_not, check_txt_records, getDirectory, writeFile
-from cryptoTools import genJWK, parse_csr, csr2Der
+from cryptoTools import gen_jwk, parse_csr, csr_to_der
 
 def get_public_key(account_key):
-    jwk = genJWK(account_key)
+    jwk = gen_jwk(account_key)
     return json.loads(jwk)
 
 def register_account(ca_url, account_key, email):
@@ -76,7 +76,7 @@ def finalize_order(ca_url, auth, order, order_headers, csr, account_key):
         raise ValueError("Order status is not ready for finalization")
     print("Passed challenges!")
     print("Getting certificate...")
-    csr_der = csr2Der(csr)
+    csr_der = csr_to_der(csr)
     _fnlz_resp, fnlz_code, _fnlz_headers = send_signed_request(order["finalize"], {"csr": b64(csr_der)}, getDirectory(ca_url)["newNonce"], auth, account_key, "Error finalizing order")
     if fnlz_code != 200:
         raise ValueError("Failed to finalize the order")

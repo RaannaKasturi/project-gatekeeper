@@ -9,7 +9,7 @@ from OpenSSL import crypto
 class InvalidKeyType(Exception):
     pass
 
-def savefile(filename, data):
+def save_file(filename, data):
     with open(filename, 'wb') as f: 
         f.write(data)
     return filename
@@ -18,7 +18,6 @@ def generate_private_key(key_type):
     key = None
     private_key = None
     public_key = None
-
     if key_type == 'ec256':
         key = ec.generate_private_key(ec.SECP256R1(), default_backend())
         private_key = key.private_bytes(
@@ -77,7 +76,7 @@ def generate_private_key(key_type):
 
     return private_key, public_key
 
-def genCSR(private_key, email, domains, common_name, country, state, locality, organization, organization_unit):
+def gen_csr(private_key, email, domains, common_name, country, state, locality, organization, organization_unit):
     sslDomains = [x509.DNSName(domain.strip()) for domain in domains]
     private_key_obj = serialization.load_pem_private_key(private_key, password=None, backend=default_backend())
     
@@ -100,7 +99,7 @@ def genCSR(private_key, email, domains, common_name, country, state, locality, o
     csr = builder.sign(private_key_obj, hashes.SHA256(), default_backend())
     return csr.public_bytes(serialization.Encoding.PEM)
 
-def verifyPrivCSR(privdata, csrdata):
+def verify_pvt_csr(privdata, csrdata):
     try:
         req = crypto.load_certificate_request(crypto.FILETYPE_PEM, csrdata)
         pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, privdata)
@@ -110,7 +109,7 @@ def verifyPrivCSR(privdata, csrdata):
         print("Private key and CSR verification failed", exc_info=True)
         return False
 
-def genPrivCSR(email, domains, key_type, common_name="", country="IN", state="Maharashtra", locality="Mumbai", organization="", organization_unit="IT"):
+def gen_verify_pvt_csr(email, domains, key_type, common_name="", country="IN", state="Maharashtra", locality="Mumbai", organization="", organization_unit="IT"):
     if email.split("@")[1] == "demo.com" or email.split("@")[1] == "example.com" or email.count("@") > 1 or email.count(".") < 1:
         print("Invalid email address")
         return None, None
@@ -129,12 +128,12 @@ def genPrivCSR(email, domains, key_type, common_name="", country="IN", state="Ma
     csrFile = f"{path}/domain.csr"
     privdata, pubdata = generate_private_key(key_type)
     tempPrivdata, _ = generate_private_key(key_type)
-    savefile(tempPrivFile, tempPrivdata)
-    savefile(privFile, privdata)
-    savefile(pubFile, pubdata)
-    csrdata = genCSR(privdata, email, domains, common_name, country, state, locality, organization, organization_unit)
-    savefile(csrFile, csrdata)
-    if verifyPrivCSR(privdata, csrdata):
+    save_file(tempPrivFile, tempPrivdata)
+    save_file(privFile, privdata)
+    save_file(pubFile, pubdata)
+    csrdata = gen_csr(privdata, email, domains, common_name, country, state, locality, organization, organization_unit)
+    save_file(csrFile, csrdata)
+    if verify_pvt_csr(privdata, csrdata):
         print("Private key and CSR are verified")
         return privFile, csrFile, tempPrivFile
     else:

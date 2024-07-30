@@ -6,7 +6,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-def genJWK(account_key):
+def gen_jwk(account_key):
     private_key_file = account_key
     with open(private_key_file, "rb") as key_file:
         private_key_bytes = key_file.read()
@@ -21,7 +21,7 @@ def genJWK(account_key):
     e = numbers.e
     modulus_hex = binascii.hexlify(n.to_bytes((n.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
     exponent_hex = binascii.hexlify(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
-    private_key_details = f"RSA Private-Key: (2048 bit, 2 primes)\nmodulus:\n"
+    private_key_details = "RSA Private-Key: (2048 bit, 2 primes)\nmodulus:\n"
     for i in range(0, len(modulus_hex), 32):
         private_key_details += "    " + ":".join(modulus_hex[i:i + 32][j:j + 2] for j in range(0, len(modulus_hex[i:i + 32]), 2)) + "\n"
     private_key_details += f"publicExponent: {e} (0x{exponent_hex})\n"
@@ -60,26 +60,27 @@ def parse_csr(file_path):
         for domain in domains:
             domain_names.add(domain)
     except x509.ExtensionNotFound:
-        domain_names = {'N/A'}  # No SAN extension found
+        domain_names.add('N/A')
     domains = sorted(domain_names)
     public_key = csr.public_key()
     key_type = public_key.__class__.__name__
     key_size = public_key.key_size
-    commonName = components.get('commonName', 'N/A')
+    common_name = components.get('commonName', 'N/A')
     organization = components.get('organizationName', 'N/A')
-    organizationalUnit = components.get('organizationalUnitName', 'N/A')
-    cityLocality = components.get('localityName', 'N/A')
-    stateProvince = components.get('stateOrProvinceName', 'N/A')
+    organizational_unit = components.get('organizationalUnitName', 'N/A')
+    city_locality = components.get('localityName', 'N/A')
+    state_province = components.get('stateOrProvinceName', 'N/A')
     country = components.get('countryName', 'N/A')
-    domainNames = domains
-    signatureAlgorithm = csr.signature_algorithm_oid._name
-    keyAlgorithm = key_type
-    keySize = key_size
-    return commonName, organization, organizationalUnit, cityLocality, stateProvince, country, domainNames, signatureAlgorithm, keyAlgorithm, keySize
+    domain_names_list = domains
+    signature_algorithm = csr.signature_algorithm_oid._name
+    key_algorithm = key_type
+    key_size = key_size
+    return common_name, organization, organizational_unit, city_locality, state_province, country, domain_names_list, signature_algorithm, key_algorithm, key_size
 
-def csr2Der(csr):
-    with open("raannakasturi/domain.csr", 'rb') as f:
+def csr_to_der(csr):
+    csr_file = csr
+    with open(csr_file, 'rb') as f:
         csr_pem = f.read()
-    csr = x509.load_pem_x509_csr(csr_pem, default_backend())
-    csr_der = csr.public_bytes(encoding=serialization.Encoding.DER)
+    csr_data = x509.load_pem_x509_csr(csr_pem, default_backend())
+    csr_der = csr_data.public_bytes(encoding=serialization.Encoding.DER)
     return csr_der
