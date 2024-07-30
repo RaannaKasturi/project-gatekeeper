@@ -54,9 +54,9 @@ def del_txt(txt_name):
                 cf_endpoint = f"zones/{cf_zone_id}/dns_records/{record_id}"
                 url = f"{cf_api}{cf_endpoint}"
                 requests.request("DELETE", url, headers=headers)
-                res = f"records deleted"
-            except:
-                res = f"error deleting records"
+                res = "records deleted"
+            except Exception as e:
+                res = f"Error deleting records: {e}"
         else:
-            res = f"records not found"
+            res = "records not found"
     return res

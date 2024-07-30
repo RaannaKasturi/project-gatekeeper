@@ -119,7 +119,6 @@ def getCert(temp_pvt_file, csr_file, challenges_info, auth, order_headers, serve
             return None, None
         else:
             print(f"DNS verification successful for {challenge_url}")
-            continue
     cert = finalize_order(server, auth, order_headers, csr_file, temp_pvt_file)
     if cert:
         cert_file = write_file(cert, email)

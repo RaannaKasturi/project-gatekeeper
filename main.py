@@ -2,7 +2,7 @@
 
 import os
 import time
-from dnsCF import addTXT, delTXT
+from dnsCF import add_txt, del_txt
 from genRecords import gen_cname, txt_recs
 from genPrivCSR import gen_verify_pvt_csr
 from LE_SignCSR import get_txt, getCert
@@ -72,14 +72,14 @@ if __name__ == "__main__":
     try:
         for txtRecords, acmeTXTValues, _ in challenges_info:
             TXTRRec = txt_recs(txtRecords, exchange)
-            delTXT(TXTRRec)
+            del_txt(TXTRRec)
         print("TXT records deleted successfully")
     except Exception as e:
         print(f"Error deleting TXT records or no TXT records exists: {e}")
     for txtRecords, acmeTXTValues, _ in challenges_info:
         TXTRRec = txt_recs(txtRecords, exchange)
         print(f"Adding TXT records {TXTRRec} with value {acmeTXTValues} to CF DNS...")
-        addTXT(TXTRRec, acmeTXTValues, email)
+        add_txt(TXTRRec, acmeTXTValues, email)
     for i in range(60):
         print(f"Waiting for DNS records to propagate... {60-i}", end="\r")
         time.sleep(1)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     try:
         for txtRecords, acmeTXTValues, _ in challenges_info:
             TXTRRec = txt_recs(txtRecords, exchange)
-            delTXT(TXTRRec)
+            del_txt(TXTRRec)
         print("TXT records deleted successfully")
     except Exception as e:
         print(f"Error deleting TXT records: {e}")
