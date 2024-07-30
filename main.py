@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print(f"Waiting for DNS records to propagate... {60-i}", end="\r")
         time.sleep(1)
     while True:
-        certFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order, order_headers, server, email)
+        certFile = getCert(tempPrivFile, csrFile, challenges_info, auth, order_headers, server, email)
         if checkc_cert(certFile) == True:
             break
         else:

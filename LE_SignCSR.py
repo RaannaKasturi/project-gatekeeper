@@ -107,7 +107,7 @@ def get_txt(temp_pvt_file, csr_file, server, email):
         txt_values.append(txt_value)
     return challenges_info, auth, order, order_headers, txt_recs, txt_values
 
-def getCert(temp_pvt_file, csr_file, challenges_info, auth, order, order_headers, server, email):
+def getCert(temp_pvt_file, csr_file, challenges_info, auth, order_headers, server, email):
     for txt_rec, txt_value, challenge_url in challenges_info:
         success = check_txt_records(txt_rec, txt_value)
         if not success:
@@ -122,5 +122,5 @@ def getCert(temp_pvt_file, csr_file, challenges_info, auth, order, order_headers
             continue
     cert = finalize_order(server, auth, order_headers, csr_file, temp_pvt_file)
     if cert:
-        certFile = write_file(cert, email)
-    return certFile
+        cert_file = write_file(cert, email)
+    return cert_file

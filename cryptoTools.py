@@ -19,8 +19,6 @@ def gen_jwk(account_key):
     numbers = public_key.public_numbers()
     n = numbers.n
     e = numbers.e
-    modulus_hex = binascii.hexlify(n.to_bytes((n.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
-    exponent_hex = binascii.hexlify(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
     temp_jwk = {
         "e": base64.urlsafe_b64encode(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).rstrip(b'=').decode('utf-8'),
         "kty": "RSA",
