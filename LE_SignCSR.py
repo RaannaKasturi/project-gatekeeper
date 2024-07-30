@@ -21,29 +21,29 @@ def register_account(ca_url, account_key, email):
     nonce_url = directory["newNonce"]
     auth = {"jwk": get_public_key(account_key)}
     acct_headers = None
-    result, code, acct_headers = send_signed_request(directory["newAccount"], reg, nonce_url, auth, account_key, "Error registering")
+    _result, code, acct_headers = send_signed_request(directory["newAccount"], reg, nonce_url, auth, account_key, "Error registering")
     if code == 201:
         print("Registered!")
     else:
         print("Already registered!")
     auth = {"kid": acct_headers["Location"]}
     print("Updating account...")
-    ua_result, ua_code, ua_headers = send_signed_request(acct_headers["Location"], {"contact": ["mailto:{}".format(email)]}, nonce_url, auth, account_key, "Error updating account")
+    _ua_result, _ua_code, _ua_headers = send_signed_request(acct_headers["Location"], {"contact": ["mailto:{}".format(email)]}, nonce_url, auth, account_key, "Error updating account")
     print("Done")
     return auth
 
 def request_challenges(ca_url, auth, domains, account_key):
     print("Making new order for {0}...".format(", ".join(list(domains))))
-    id = {"identifiers": []}
+    identifier = {"identifiers": []}
     for domain in domains:
-        id["identifiers"].append({"type": "dns", "value": domain})
-    order, order_code, order_headers = send_signed_request(getDirectory(ca_url)["newOrder"], id, getDirectory(ca_url)["newNonce"], auth, account_key, "Error creating new order")
+        identifier["identifiers"].append({"type": "dns", "value": domain})
+    order, _order_code, order_headers = send_signed_request(getDirectory(ca_url)["newOrder"], id, getDirectory(ca_url)["newNonce"], auth, account_key, "Error creating new order")
     return order, order_headers
 
 def dns_challenges(ca_url, auth, order, domain, thumbprint, account_key):
     challenges_info = []
     for auth_url in order["authorizations"]:
-        authz_result, authz_code, authz_headers = send_signed_request(
+        authz_result, _authz_code, _authz_headers = send_signed_request(
             auth_url, None, getDirectory(ca_url)["newNonce"], auth, account_key, "Error getting authorization")
         challenge = next((c for c in authz_result["challenges"] if c["type"] == "dns-01" and authz_result["identifier"]["value"] == domain), None)
         if challenge:
@@ -57,7 +57,7 @@ def dns_challenges(ca_url, auth, order, domain, thumbprint, account_key):
 
 def dns_verification(ca_url, auth, challenge_url, account_key):
     print("Requesting verification for {}...".format(challenge_url))
-    verification_result, verification_code, verification_headers = send_signed_request(
+    verification_result, verification_code, _verification_headers = send_signed_request(
         challenge_url, {}, getDirectory(ca_url)["newNonce"], auth, account_key, "Error submitting challenge")
     if verification_code != 200:
         print(f"Error submitting challenge:\nUrl: {challenge_url}\nData: {json.dumps(verification_result)}\nResponse Code: {verification_code}\nResponse: {verification_result}")
@@ -77,7 +77,7 @@ def finalize_order(ca_url, auth, order, order_headers, csr, account_key):
     print("Passed challenges!")
     print("Getting certificate...")
     csr_der = csr2Der(csr)
-    fnlz_resp, fnlz_code, fnlz_headers = send_signed_request(order["finalize"], {"csr": b64(csr_der)}, getDirectory(ca_url)["newNonce"], auth, account_key, "Error finalizing order")
+    _fnlz_resp, fnlz_code, _fnlz_headers = send_signed_request(order["finalize"], {"csr": b64(csr_der)}, getDirectory(ca_url)["newNonce"], auth, account_key, "Error finalizing order")
     if fnlz_code != 200:
         raise ValueError("Failed to finalize the order")
     order = poll_until_not(order_headers["Location"], ["pending", "processing"], getDirectory(ca_url)["newNonce"], auth, account_key, "Error checking order status after finalization")
@@ -85,14 +85,14 @@ def finalize_order(ca_url, auth, order, order_headers, csr, account_key):
         print("Order finalized successfully!")
     else:
         raise ValueError("Order finalization failed")
-    cert_resp, cert_code, cert_headers = send_signed_request(order["certificate"], None, getDirectory(ca_url)["newNonce"], auth, account_key, "Error getting certificate")
+    cert_resp, cert_code, _cert_headers = send_signed_request(order["certificate"], None, getDirectory(ca_url)["newNonce"], auth, account_key, "Error getting certificate")
     if cert_code != 200:
         raise ValueError("Failed to get the certificate")
     print("Received certificate!")
     return cert_resp
 
 def getTXT(tempPrivateFile, CSRFile, server, email):
-    commonName, organization, organizationalUnit, cityLocality, stateProvince, country, domainNames, signatureAlgorithm, keyAlgorithm, keySize = parse_csr(CSRFile)
+    _commonName, _organization, _organizationalUnit, _cityLocality, _stateProvince, _country, domainNames, _signatureAlgorithm, _keyAlgorithm, _keySize = parse_csr(CSRFile)
     auth = register_account(server, tempPrivateFile, email)
     order, order_headers = request_challenges(server, auth, domainNames, tempPrivateFile)
     TXTRecs = []
