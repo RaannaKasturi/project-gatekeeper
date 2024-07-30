@@ -1,5 +1,6 @@
 import base64
 import json
+import subprocess
 import sys
 import time
 import urllib.request
@@ -57,14 +58,22 @@ def mk_signed_req_body(url, payload, nonce, auth, account_key):
     if len(nonce) < 1:
         print("_mk_signed_req_body: nonce invalid: {}".format(nonce))
         sys.exit(1)
-    payload64 = "" if payload is None else b64(json.dumps(payload).encode("utf8"))
+    if payload is None:
+        payload64 = ""
+    else:
+        try:
+            payload_json = json.dumps(payload, default=lambda o: o.__dict__)
+            payload64 = b64(payload_json.encode("utf8"))
+        except TypeError as e:
+            print("Payload serialization error: {}".format(e))
+            sys.exit(1)
     protected = {"url": url, "alg": "RS256", "nonce": nonce}
     protected.update(auth)
     protected64 = b64(json.dumps(protected).encode("utf8"))
     protected_input = "{0}.{1}".format(protected64, payload64).encode("utf8")
-    signature = sign(account_key, protected_input)
+    out = sign(account_key, protected_input)
     return json.dumps(
-        {"protected": protected64, "payload": payload64, "signature": b64(signature)}
+        {"protected": protected64, "payload": payload64, "signature": b64(out)}
     )
 
 def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):

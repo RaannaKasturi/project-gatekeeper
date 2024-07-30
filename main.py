@@ -1,5 +1,3 @@
-
-
 import os
 import time
 from dnsCF import add_txt, del_txt

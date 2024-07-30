@@ -34,10 +34,19 @@ def register_account(ca_url, account_key, email):
 
 def request_challenges(ca_url, auth, domains, account_key):
     print("Making new order for {0}...".format(", ".join(list(domains))))
-    identifier = {"identifiers": []}
-    for domain in domains:
-        identifier["identifiers"].append({"type": "dns", "value": domain})
-    order, _order_code, order_headers = send_signed_request(get_directory(ca_url)["newOrder"], id, get_directory(ca_url)["newNonce"], auth, account_key, "Error creating new order")
+    payload = {
+        "identifiers": [
+            {"type": "dns", "value": domain} for domain in domains
+        ]
+    }
+    order, _order_code, order_headers = send_signed_request(
+        get_directory(ca_url)["newOrder"],
+        payload,
+        get_directory(ca_url)["newNonce"],
+        auth,
+        account_key,
+        "Error creating new order"
+    )
     return order, order_headers
 
 def dns_challenges(ca_url, auth, order, domain, thumbprint, account_key):
