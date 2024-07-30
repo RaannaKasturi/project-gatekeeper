@@ -14,12 +14,12 @@ def get_directory(ca_url):
     return CA_DIR
 
 def write_file(data, email):
-    certFile  = f"{email.split('@')[0]}/Certificate.pem"
-    file_name = certFile
+    cert_file  = f"{email.split('@')[0]}/Certificate.pem"
+    file_name = cert_file
     with open(file_name, 'w') as f:
         f.write(data)
         f.write('\n')
-    return certFile
+    return cert_file
 
 def b64(b):
     "Convert bytes to JWT base64 string"
@@ -67,14 +67,14 @@ def mk_signed_req_body(url, payload, nonce, auth, account_key):
         {"protected": protected64, "payload": payload64, "signature": b64(signature)}
     )
 
-def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):
+def send_signed_request(url, payload, nonce_url, auth, account_key, msg):
     """Make signed request to ACME endpoint"""
     tried = 0
     nonce = do_request(nonce_url)[2]["Replay-Nonce"]
     while True:
         data = mk_signed_req_body(url, payload, nonce, auth, account_key)
         resp_data, resp_code, headers = do_request(
-            url, data=data.encode("utf8"), err_msg=err_msg
+            url, data=data.encode("utf8"), err_msg=msg
         )
         if resp_code in [200, 201, 204]:
             return resp_data, resp_code, headers
@@ -88,7 +88,7 @@ def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):
         else:
             print(
                 "{0}:\nUrl: {1}\nData: {2}\nResponse Code: {3}\nResponse: {4}".format(
-                    err_msg, url, data, resp_code, resp_data
+                    msg, url, data, resp_code, resp_data
                 )
             )
             sys.exit(1)

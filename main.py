@@ -57,12 +57,12 @@ def checkc_cert(file_path):
         return False
 
 if __name__ == "__main__":
-    iDomains = "thenayankasturi.eu.org, www.thenayankasturi.eu.org, dash.thenayankasturi.eu.org"
+    i_domains = "thenayankasturi.eu.org, www.thenayankasturi.eu.org, dash.thenayankasturi.eu.org"
     email = "raannakasturi@gmail.com"
     keyType = "rsa2048" # ec256 or ec384 or rsa2048 or rsa4096
     cfDomain = "silerudaagartha.eu.org"
     server = choose_ca_server("letsencrypt_test")
-    domains = get_domains(iDomains)
+    domains = get_domains(i_domains)
     exchange = extract_subdomains(domains)
     CNAMERecs, CNAMEValues = gen_cname(domains, cfDomain, exchange)
     for CNAMERec, CNAMEValue in zip(CNAMERecs, CNAMEValues):

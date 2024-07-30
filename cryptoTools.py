@@ -21,7 +21,6 @@ def gen_jwk(account_key):
     e = numbers.e
     modulus_hex = binascii.hexlify(n.to_bytes((n.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
     exponent_hex = binascii.hexlify(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
-    private_key_details = "RSA Private-Key: (2048 bit, 2 primes)\nmodulus:\n"
     for i in range(0, len(modulus_hex), 32):
         private_key_details += "    " + ":".join(modulus_hex[i:i + 32][j:j + 2] for j in range(0, len(modulus_hex[i:i + 32]), 2)) + "\n"
     private_key_details += f"publicExponent: {e} (0x{exponent_hex})\n"
@@ -64,7 +63,7 @@ def parse_csr(file_path):
     domains = sorted(domain_names)
     public_key = csr.public_key()
     key_type = public_key.__class__.__name__
-    key_size = public_key.key_size
+    size = public_key.key_size
     common_name = components.get('commonName', 'N/A')
     organization = components.get('organizationName', 'N/A')
     organizational_unit = components.get('organizationalUnitName', 'N/A')
@@ -74,7 +73,7 @@ def parse_csr(file_path):
     domain_names_list = domains
     signature_algorithm = csr.signature_algorithm_oid._name
     key_algorithm = key_type
-    key_size = key_size
+    key_size = size
     return common_name, organization, organizational_unit, city_locality, state_province, country, domain_names_list, signature_algorithm, key_algorithm, key_size
 
 def csr_to_der(csr):

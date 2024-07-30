@@ -1,8 +1,8 @@
 import hashlib
 
-def get_domains(iDomains):
+def get_domains(i_domains):
     domains = []
-    for domain in iDomains.split(","):
+    for domain in i_domains.split(","):
         domain = domain.strip()
         domains.append(domain)
     return domains
@@ -13,34 +13,33 @@ def prefix(domain):
     return prefix
 
 def gen_cname_recs(domains):
-    CNAMERecs = []
+    cname_recs = []
     for domain in domains:
-        CNAMERec = f"_acme-challenge.{domain}"
-        CNAMERecs.append(CNAMERec)
-    return CNAMERecs
+        cname_rec = f"_acme-challenge.{domain}"
+        cname_recs.append(cname_rec)
+    return cname_recs
 
-def gen_cname_values(domains, cfDomain, exchange):
-    tempCNAMEValues = []
-    CNAMEValues = []
+def gen_cname_values(domains, cf_domain, exchange):
+    temp_cname_values = []
+    cname_values = []
     for domain in domains:
-        CNAMEValue = prefix(domain)
-        CNAMEValue = f"{CNAMEValue}.{domain}"
-        tempCNAMEValues.append(CNAMEValue)
-    for CNAMEValue in tempCNAMEValues:
-        modified_CNAMEValue = CNAMEValue.replace(exchange, cfDomain)
-        CNAMEValues.append(modified_CNAMEValue)
-    return CNAMEValues
+        cname_value = prefix(domain)
+        cname_value = f"{cname_value}.{domain}"
+        temp_cname_values.append(cname_value)
+    for cname_value in temp_cname_values:
+        modified_cname_Value = cname_value.replace(exchange, cf_domain)
+        cname_values.append(modified_cname_Value)
+    return cname_values
 
-def gen_cname(domains, cfDomain, exchange):
-    records = []
-    CNAMERecs  = gen_cname_recs(domains)
-    CNAMEValues = gen_cname_values(domains, cfDomain, exchange)
-    return CNAMERecs, CNAMEValues
+def gen_cname(domains, cf_domain, exchange):
+    cname_recs  = gen_cname_recs(domains)
+    cname_values = gen_cname_values(domains, cf_domain, exchange)
+    return cname_recs, cname_values
 
-def txt_recs(txtRecords, exchange):
-    txtRecord = txtRecords.replace("_acme-challenge.", "")
-    txtRec = txtRecord.replace(f"{exchange}", "")
-    pre = prefix(txtRecord)
+def txt_recs(txt_records, exchange):
+    txt_record = txt_records.replace("_acme-challenge.", "")
+    txtRec = txt_record.replace(f"{exchange}", "")
+    pre = prefix(txt_record)
     rec = f"{pre}.{txtRec}"
     rec = rec.strip(".")
     return rec
