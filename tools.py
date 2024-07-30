@@ -9,13 +9,26 @@ from urllib.error import URLError
 from urllib.request import urlopen
 from cryptoTools import sign
 
+def write_to_dual_output(message):
+    file_name = 'console_output.txt'
+    # Write message to the file
+    with open(file_name, 'a') as f:
+        f.write(message)
+    # Write message to the console
+    sys.__stdout__.write(message)
+
 def get_directory(ca_url):
     global CA_DIR
     CA_DIR = json.loads(urlopen(ca_url).read().decode("utf8"))
     return CA_DIR
 
+def read_file(file):
+    with open(file, 'r') as f:
+        data = f.read()
+    return data
+
 def write_file(data, email):
-    cert_file  = f"{email.split('@')[0]}/Certificate.pem"
+    cert_file  = f"{email.split('@')[0]}/certificate.pem"
     file_name = cert_file
     with open(file_name, 'w') as f:
         f.write(data)
