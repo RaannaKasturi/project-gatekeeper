@@ -21,15 +21,12 @@ def gen_jwk(account_key):
     e = numbers.e
     modulus_hex = binascii.hexlify(n.to_bytes((n.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
     exponent_hex = binascii.hexlify(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).decode('utf-8')
-    for i in range(0, len(modulus_hex), 32):
-        private_key_details += "    " + ":".join(modulus_hex[i:i + 32][j:j + 2] for j in range(0, len(modulus_hex[i:i + 32]), 2)) + "\n"
-    private_key_details += f"publicExponent: {e} (0x{exponent_hex})\n"
-    tempJWK = {
+    temp_jwk = {
         "e": base64.urlsafe_b64encode(e.to_bytes((e.bit_length() + 7) // 8, byteorder='big')).rstrip(b'=').decode('utf-8'),
         "kty": "RSA",
         "n": base64.urlsafe_b64encode(n.to_bytes((n.bit_length() + 7) // 8, byteorder='big')).rstrip(b'=').decode('utf-8')
     }
-    jwk = json.dumps(tempJWK)
+    jwk = json.dumps(temp_jwk)
     return jwk
 
 def sign(account_key, data):

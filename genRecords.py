@@ -27,8 +27,8 @@ def gen_cname_values(domains, cf_domain, exchange):
         cname_value = f"{cname_value}.{domain}"
         temp_cname_values.append(cname_value)
     for cname_value in temp_cname_values:
-        modified_cname_Value = cname_value.replace(exchange, cf_domain)
-        cname_values.append(modified_cname_Value)
+        modified_cname_value = cname_value.replace(exchange, cf_domain)
+        cname_values.append(modified_cname_value)
     return cname_values
 
 def gen_cname(domains, cf_domain, exchange):
@@ -38,8 +38,8 @@ def gen_cname(domains, cf_domain, exchange):
 
 def txt_recs(txt_records, exchange):
     txt_record = txt_records.replace("_acme-challenge.", "")
-    txtRec = txt_record.replace(f"{exchange}", "")
+    txt_rec = txt_record.replace(f"{exchange}", "")
     pre = prefix(txt_record)
-    rec = f"{pre}.{txtRec}"
+    rec = f"{pre}.{txt_rec}"
     rec = rec.strip(".")
     return rec

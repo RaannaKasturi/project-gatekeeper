@@ -77,7 +77,7 @@ def generate_private_key(key_type):
     return private_key, public_key
 
 def gen_csr(private_key, email, domains, common_name, country, state, locality, organization, organization_unit):
-    sslDomains = [x509.DNSName(domain.strip()) for domain in domains]
+    ssl_domains = [x509.DNSName(domain.strip()) for domain in domains]
     private_key_obj = serialization.load_pem_private_key(private_key, password=None, backend=default_backend())
     
     subject = x509.Name([
@@ -93,16 +93,16 @@ def gen_csr(private_key, email, domains, common_name, country, state, locality, 
     builder = x509.CertificateSigningRequestBuilder()
     builder = builder.subject_name(subject)
     builder = builder.add_extension(
-        x509.SubjectAlternativeName(sslDomains),
+        x509.SubjectAlternativeName(ssl_domains),
         critical=False,
     )
     csr = builder.sign(private_key_obj, hashes.SHA256(), default_backend())
     return csr.public_bytes(serialization.Encoding.PEM)
 
-def verify_pvt_csr(privdata, csrdata):
+def verify_pvt_csr(pvt_data, csr_data):
     try:
-        req = crypto.load_certificate_request(crypto.FILETYPE_PEM, csrdata)
-        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, privdata)
+        req = crypto.load_certificate_request(crypto.FILETYPE_PEM, csr_data)
+        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, pvt_data)
         req.verify(pkey)
         return True
     except crypto.Error:
@@ -122,20 +122,20 @@ def gen_verify_pvt_csr(email, domains, key_type, common_name="", country="IN", s
     organization = organization or common_name.split(".")[0]
     path = email.split("@")[0]
     os.makedirs(path, exist_ok=True)
-    tempPrivFile = f"{path}/tempPrivate.pem"
-    privFile = f"{path}/private.pem"
-    pubFile = f"{path}/public.pem"
-    csrFile = f"{path}/domain.csr"
-    privdata, pubdata = generate_private_key(key_type)
-    tempPrivdata, _ = generate_private_key(key_type)
-    save_file(tempPrivFile, tempPrivdata)
-    save_file(privFile, privdata)
-    save_file(pubFile, pubdata)
-    csrdata = gen_csr(privdata, email, domains, common_name, country, state, locality, organization, organization_unit)
-    save_file(csrFile, csrdata)
-    if verify_pvt_csr(privdata, csrdata):
+    temp_pvt_file = f"{path}/tempPrivate.pem"
+    pvt_file = f"{path}/private.pem"
+    pub_file = f"{path}/public.pem"
+    csr_file = f"{path}/domain.csr"
+    pvt_data, pub_data = generate_private_key(key_type)
+    temp_pvt_data, _ = generate_private_key(key_type)
+    save_file(temp_pvt_file, temp_pvt_data)
+    save_file(pvt_file, pvt_data)
+    save_file(pub_file, pub_data)
+    csr_data = gen_csr(pvt_data, email, domains, common_name, country, state, locality, organization, organization_unit)
+    save_file(csr_file, csr_data)
+    if verify_pvt_csr(pvt_data, csr_data):
         print("Private key and CSR are verified")
-        return privFile, csrFile, tempPrivFile
+        return pvt_file, csr_file, temp_pvt_file
     else:
         print("Error in generating Private Key and CSR. Please try again.")
         return None, None, None

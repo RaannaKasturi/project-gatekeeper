@@ -5,11 +5,11 @@ import time
 from dnsCF import addTXT, delTXT
 from genRecords import gen_cname, txt_recs
 from genPrivCSR import gen_verify_pvt_csr
-from LE_SignCSR import getTXT, getCert
+from LE_SignCSR import get_txt, getCert
 
-def get_domains(iDomains):
+def get_domains(i_domains):
     domains = []
-    for domain in iDomains.split(","):
+    for domain in i_domains.split(","):
         domain = domain.strip()
         domains.append(domain)
     return domains
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     for CNAMERec, CNAMEValue in zip(CNAMERecs, CNAMEValues):
         print(f"{CNAMERec} ==> {CNAMEValue}")
     privFile, csrFile, tempPrivFile = gen_verify_pvt_csr(email, domains, keyType)
-    challenges_info, auth, order, order_headers, acmeTXTRecs, acmeTXTValues = getTXT(tempPrivFile, csrFile, server, email)
+    challenges_info, auth, order, order_headers, acmeTXTRecs, acmeTXTValues = get_txt(tempPrivFile, csrFile, server, email)
     try:
         for txtRecords, acmeTXTValues, _ in challenges_info:
             TXTRRec = txt_recs(txtRecords, exchange)
