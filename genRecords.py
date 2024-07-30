@@ -36,3 +36,11 @@ def genCNAME(domains, cfDomain, exchange):
     CNAMERecs  = genCNAMERecs(domains)
     CNAMEValues = genCNAMEValues(domains, cfDomain, exchange)
     return CNAMERecs, CNAMEValues
+
+def TXTRec(txtRecords, exchange):
+    txtRecord = txtRecords.replace("_acme-challenge.", "")
+    txtRec = txtRecord.replace(f"{exchange}", "")
+    pre = prefix(txtRecord)
+    rec = f"{pre}.{txtRec}"
+    rec = rec.strip(".")
+    return rec

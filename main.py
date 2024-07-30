@@ -3,7 +3,7 @@
 import os
 import time
 from dnsCF import addTXT, delTXT
-from genRecords import genCNAME, prefix
+from genRecords import genCNAME, TXTRec
 from genPrivCSR import genPrivCSR
 from LE_SignCSR import getTXT, getCert
 
@@ -40,24 +40,6 @@ def chooseCAserver(provider):
 def extractSubDomains(domains):
     exchange = min(domains, key=len)
     return exchange
-    
-def genTXT(TXTRecs, TXTValues, exchange):
-    TXTRs = []
-    TXTVs = []
-    for TXTRec, TXTValue in zip(TXTRecs, TXTValues):
-        TXTRec = TXTRec.replace(f".{exchange}", '')
-        TXTValue = TXTValue
-        TXTRs.append(TXTRec)
-        TXTVs.append(TXTValue)
-    return TXTRs, TXTVs
-
-def TXTRec(txtRecords, exchange):
-    txtRecord = txtRecords.replace("_acme-challenge.", "")
-    txtRec = txtRecord.replace(f"{exchange}", "")
-    pre = prefix(txtRecord)
-    rec = f"{pre}.{txtRec}"
-    rec = rec.strip(".")
-    return rec
 
 def checkCert(file_path):
     try:

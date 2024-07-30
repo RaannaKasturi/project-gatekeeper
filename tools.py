@@ -1,24 +1,25 @@
 import base64
 import json
-import subprocess
 import sys
 import time
 import urllib.request
-from urllib.error import URLError
 import dns.resolver
+from urllib.error import URLError
+from urllib.request import urlopen
+from cryptoTools import sign
 
+def getDirectory(ca_url):
+    global CA_DIR
+    CA_DIR = json.loads(urlopen(ca_url).read().decode("utf8"))
+    return CA_DIR
 
-
-def cmd(cmd_list, stdin=None, cmd_input=None, err_msg="Command Line Error"):
-    "Runs external commands"
-    proc = subprocess.Popen(
-        cmd_list, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    out, err = proc.communicate(cmd_input)
-    if proc.returncode != 0:
-        sys.stderr.write("{0}: {1}\n".format(err_msg, err.decode()))
-        sys.exit(1)
-    return out
+def writeFile(data, email):
+    certFile  = f"{email.split('@')[0]}/Certificate.pem"
+    file_name = certFile
+    with open(file_name, 'w') as f:
+        f.write(data)
+        f.write('\n')
+    return certFile
 
 def b64(b):
     "Convert bytes to JWT base64 string"
@@ -56,20 +57,14 @@ def mk_signed_req_body(url, payload, nonce, auth, account_key):
     if len(nonce) < 1:
         sys.stderr.write("_mk_signed_req_body: nonce invalid: {}".format(nonce))
         sys.exit(1)
-
     payload64 = "" if payload is None else b64(json.dumps(payload).encode("utf8"))
     protected = {"url": url, "alg": "RS256", "nonce": nonce}
     protected.update(auth)
     protected64 = b64(json.dumps(protected).encode("utf8"))
     protected_input = "{0}.{1}".format(protected64, payload64).encode("utf8")
-    out = cmd(
-        ["openssl", "dgst", "-sha256", "-sign", account_key],
-        stdin=subprocess.PIPE,
-        cmd_input=protected_input,
-        err_msg="OpenSSL Error",
-    )
+    signature = sign(account_key, protected_input)
     return json.dumps(
-        {"protected": protected64, "payload": payload64, "signature": b64(out)}
+        {"protected": protected64, "payload": payload64, "signature": b64(signature)}
     )
 
 def send_signed_request(url, payload, nonce_url, auth, account_key, err_msg):
