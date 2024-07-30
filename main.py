@@ -83,10 +83,10 @@ def generate_ssl(i_domains, email, key_type, server):
             print("TXT records deleted successfully")
         except Exception as e:
             print(f"Error deleting TXT records or no TXT records exists: {e}")
-        for txt_records, acmeTXTValues, _ in challenges_info:
+        for txt_records, acme_txt_values, _ in challenges_info:
             txt_rec = txt_recs(txt_records, exchange)
-            print(f"Adding TXT records {txt_rec} with value {acmeTXTValues} to CF DNS...")
-            add_txt(txt_rec, acmeTXTValues, email)
+            print(f"Adding TXT records {txt_rec} with value {acme_txt_values} to CF DNS...")
+            add_txt(txt_rec, acme_txt_values, email)
         for i in range(60):
             print(f"Waiting for DNS records to propagate... {60-i}", end="\r")
             time.sleep(1)
@@ -100,7 +100,7 @@ def generate_ssl(i_domains, email, key_type, server):
             else:
                 time.sleep(20)
         try:
-            for txt_records, acmeTXTValues, _ in challenges_info:
+            for txt_records, acme_txt_values, _ in challenges_info:
                 txt_rec = txt_recs(txt_records, exchange)
                 del_txt(txt_rec)
             print("TXT records deleted successfully")
