@@ -1,4 +1,3 @@
-import binascii
 import base64
 import json
 from cryptography.hazmat.backends import default_backend
