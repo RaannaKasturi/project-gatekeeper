@@ -125,7 +125,7 @@ def main(i_domains, email, key_type, server):
 if __name__ == "__main__":
     i_domains = "thenayankasturi.eu.org, www.thenayankasturi.eu.org, dash.thenayankasturi.eu.org"
     email = "raannakasturi@gmail.com"
-    key_type = "ec256" # ec256 or ec384 or rsa2048 or rsa4096
+    key_type = "rsa4096" # ec256 or ec384 or rsa2048 or rsa4096
     server = "letsencrypt" # letsencrypt or letsencrypt_test or buypass or buypass_test or zerossl or sslcomRSA or sslcomECC or google or googletest
     pvt, csr, crt, log = main(i_domains, email, key_type, server)
     print(f"Private Key:\n{read_file(pvt)}")
